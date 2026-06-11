@@ -718,17 +718,43 @@
     }, 400);
   }
 
-  function submitRSVP2() {
+  async function submitRSVP2() {
     const name = document.getElementById('rsvp-name-2').value.trim();
     const answer = document.getElementById('rsvp-answer-2').value;
     if (!name || !answer) { alert('Veuillez remplir tous les champs 🌸'); return; }
-    document.getElementById('rsvp-form-2').style.display = 'none';
-    const s = document.getElementById('rsvp-success-2');
-    s.style.display = 'block';
-    s.textContent = answer === 'yes'
-      ? 'Merci ' + name + ', on a hâte de te voir ! 🥂🌸'
-      : 'Merci ' + name + ', tu nous manqueras 💕';
-    spawnParticles();
+
+    const btn = document.querySelector('.rsvp-btn');
+    btn.textContent = 'Envoi en cours…';
+    btn.disabled = true;
+
+    try {
+      const response = await fetch('https://formspree.io/f/xwvjnrgw', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          prenom: name,
+          reponse: answer === 'yes' ? '✅ Oui, j\'y serai !' : '❌ Je ne pourrai pas venir'
+        })
+      });
+
+      if (response.ok) {
+        document.getElementById('rsvp-form-2').style.display = 'none';
+        const s = document.getElementById('rsvp-success-2');
+        s.style.display = 'block';
+        s.textContent = answer === 'yes'
+          ? 'Merci ' + name + ', on a hâte de te voir ! 🥂🌸'
+          : 'Merci ' + name + ', tu nous manqueras 💕';
+        spawnParticles();
+      } else {
+        alert('Une erreur s\'est produite. Réessaie ! 🌸');
+        btn.textContent = 'Confirmer ma présence';
+        btn.disabled = false;
+      }
+    } catch (err) {
+      alert('Une erreur s\'est produite. Réessaie ! 🌸');
+      btn.textContent = 'Confirmer ma présence';
+      btn.disabled = false;
+    }
   }
 </script>
 </body>
